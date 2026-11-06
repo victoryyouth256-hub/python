@@ -29,13 +29,18 @@ class TestTelevision:
         # tv on and unmuted
         self.tv.mute()
         assert self.tv.__str__() == 'Power = True, Channel = 0, Volume = 1'
-        # tv off and muted (mute has no effect when off)
+        # tv off and unmuted (mute has no effect when off)
         self.tv.power()
         self.tv.mute()
         assert self.tv.__str__() == 'Power = False, Channel = 0, Volume = 1'
-        # tv off and unmuted
+        # tv off and muted: mute while on, power off, then mute() must not unmute it
+        self.tv.power()
         self.tv.mute()
-        assert self.tv.__str__() == 'Power = False, Channel = 0, Volume = 1'
+        self.tv.power()
+        self.tv.mute()
+        assert self.tv.__str__() == 'Power = False, Channel = 0, Volume = 0'
+        self.tv.power()
+        assert self.tv.__str__() == 'Power = True, Channel = 0, Volume = 0'
 
     def test_channel_up(self):
         # tv off and channel increased
@@ -86,10 +91,12 @@ class TestTelevision:
         self.tv.volume_up()
         self.tv.volume_down()
         assert self.tv.__str__() == 'Power = True, Channel = 0, Volume = 1'
-        # tv on, muted, and volume decreased
+        # tv on, muted, and volume decreased (start at the maximum so unmuting is observable)
+        self.tv.volume_up()
         self.tv.mute()
         self.tv.volume_down()
-        assert self.tv.__str__() == 'Power = True, Channel = 0, Volume = 0'
+        assert self.tv.__str__() == 'Power = True, Channel = 0, Volume = 1'
         # tv on and volume decreased past the minimum value
+        self.tv.volume_down()
         self.tv.volume_down()
         assert self.tv.__str__() == 'Power = True, Channel = 0, Volume = 0'
